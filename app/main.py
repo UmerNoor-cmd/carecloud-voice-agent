@@ -148,8 +148,8 @@ app.include_router(calls_router)
 app.include_router(vapi_router)
 app.include_router(vapi_router, prefix="/api")
 
-# Health Check Endpoint
-@app.get("/health", tags=["Health"])
+# Health Check Endpoint (supports GET and HEAD)
+@app.api_route("/health", methods=["GET", "HEAD"], tags=["Health"])
 def health_check():
     return {
         "status": "healthy",
@@ -157,12 +157,12 @@ def health_check():
         "database": "connected"
     }
 
-# Static files & Dashboard Root
+# Static files & Dashboard Root (supports GET and HEAD)
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-@app.get("/", tags=["Dashboard"])
+@app.api_route("/", methods=["GET", "HEAD"], tags=["Dashboard"])
 def serve_dashboard():
     index_file = os.path.join(static_dir, "index.html")
     if os.path.exists(index_file):
