@@ -5,6 +5,7 @@ const app = {
 
   init() {
     this.setupTabs();
+    this.setupGlobalFormatters();
     this.refreshAll();
     // Poll every 10 seconds for real-time live call updates
     setInterval(() => {
@@ -36,6 +37,72 @@ const app = {
           document.getElementById('page-heading').innerText = headings[tabId][0];
           document.getElementById('page-subheading').innerText = headings[tabId][1];
         }
+      });
+    });
+  },
+
+  // Setup input formatting & integer-only restrictions
+  setupGlobalFormatters(container = document) {
+    // 1. Phone numbers: only digits, formatted as 555-123-4567, max 10 digits
+    container.querySelectorAll('.format-phone').forEach(el => {
+      el.addEventListener('input', (e) => {
+        let digits = e.target.value.replace(/\D/g, '');
+        if (digits.length > 10) digits = digits.slice(0, 10);
+        
+        let formatted = digits;
+        if (digits.length > 6) {
+          formatted = `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+        } else if (digits.length > 3) {
+          formatted = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+        }
+        e.target.value = formatted;
+      });
+    });
+
+    // 2. Zip codes: only digits, max 5 (or 9 for zip+4)
+    container.querySelectorAll('.format-zip').forEach(el => {
+      el.addEventListener('input', (e) => {
+        let val = e.target.value.replace(/[^\d-]/g, '');
+        let digits = val.replace(/\D/g, '');
+        if (digits.length > 9) digits = digits.slice(0, 9);
+
+        if (digits.length > 5) {
+          e.target.value = `${digits.slice(0, 5)}-${digits.slice(5)}`;
+        } else {
+          e.target.value = digits;
+        }
+      });
+    });
+
+    // 3. Date of birth: only digits, auto MM/DD/YYYY
+    container.querySelectorAll('.format-dob').forEach(el => {
+      el.addEventListener('input', (e) => {
+        let digits = e.target.value.replace(/\D/g, '');
+        if (digits.length > 8) digits = digits.slice(0, 8);
+
+        let formatted = digits;
+        if (digits.length > 4) {
+          formatted = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+        } else if (digits.length > 2) {
+          formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+        }
+        e.target.value = formatted;
+      });
+    });
+
+    // 4. State: only 2 uppercase letters
+    container.querySelectorAll('.format-state').forEach(el => {
+      el.addEventListener('input', (e) => {
+        let letters = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
+        if (letters.length > 2) letters = letters.slice(0, 2);
+        e.target.value = letters;
+      });
+    });
+
+    // 5. Names: only alphabetic characters, hyphens, apostrophes, and spaces
+    container.querySelectorAll('.format-name').forEach(el => {
+      el.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^a-zA-Z\s'-]/g, '');
       });
     });
   },
@@ -190,24 +257,25 @@ const app = {
 
     document.getElementById('modal-title').innerText = `${p.first_name} ${p.last_name}`;
     document.getElementById('modal-body-content').innerHTML = `
+      <div id="modal-error-banner" class="error-banner" style="display:none;"></div>
       <form onsubmit="app.updatePatient(event, '${p.patient_id}')">
         <div class="form-row">
           <div class="form-group">
-            <label>First Name</label>
-            <input type="text" id="edit-fn" value="${this.escape(p.first_name)}" required>
+            <label>First Name *</label>
+            <input type="text" id="edit-fn" class="format-name" value="${this.escape(p.first_name)}" required maxlength="50">
           </div>
           <div class="form-group">
-            <label>Last Name</label>
-            <input type="text" id="edit-ln" value="${this.escape(p.last_name)}" required>
+            <label>Last Name *</label>
+            <input type="text" id="edit-ln" class="format-name" value="${this.escape(p.last_name)}" required maxlength="50">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Date of Birth (MM/DD/YYYY)</label>
-            <input type="text" id="edit-dob" value="${this.escape(p.date_of_birth)}" required>
+            <label>Date of Birth * (MM/DD/YYYY)</label>
+            <input type="text" id="edit-dob" class="format-dob" inputmode="numeric" value="${this.escape(p.date_of_birth)}" required maxlength="10">
           </div>
           <div class="form-group">
-            <label>Sex</label>
+            <label>Sex *</label>
             <select id="edit-sex">
               <option value="Male" ${p.sex === 'Male' ? 'selected' : ''}>Male</option>
               <option value="Female" ${p.sex === 'Female' ? 'selected' : ''}>Female</option>
@@ -218,30 +286,30 @@ const app = {
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Phone Number</label>
-            <input type="text" id="edit-phone" value="${this.escape(p.phone_number)}" required>
+            <label>Phone Number * (10 Digits Only)</label>
+            <input type="text" id="edit-phone" class="format-phone" inputmode="numeric" value="${this.escape(p.phone_number)}" required maxlength="12" placeholder="555-123-4567">
           </div>
           <div class="form-group">
             <label>Email</label>
-            <input type="email" id="edit-email" value="${this.escape(p.email || '')}">
+            <input type="email" id="edit-email" value="${this.escape(p.email || '')}" placeholder="patient@example.com">
           </div>
         </div>
         <div class="form-group">
-          <label>Address Line 1</label>
-          <input type="text" id="edit-addr1" value="${this.escape(p.address_line_1)}" required>
+          <label>Address Line 1 *</label>
+          <input type="text" id="edit-addr1" value="${this.escape(p.address_line_1)}" required maxlength="255">
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>City</label>
-            <input type="text" id="edit-city" value="${this.escape(p.city)}" required>
+            <label>City *</label>
+            <input type="text" id="edit-city" value="${this.escape(p.city)}" required maxlength="100">
           </div>
           <div class="form-group" style="flex:0.5;">
-            <label>State</label>
-            <input type="text" id="edit-state" value="${this.escape(p.state)}" maxlength="2" required>
+            <label>State * (2-letter)</label>
+            <input type="text" id="edit-state" class="format-state" value="${this.escape(p.state)}" maxlength="2" required placeholder="FL">
           </div>
           <div class="form-group" style="flex:0.7;">
-            <label>Zip Code</label>
-            <input type="text" id="edit-zip" value="${this.escape(p.zip_code)}" required>
+            <label>Zip Code * (5 digits)</label>
+            <input type="text" id="edit-zip" class="format-zip" inputmode="numeric" value="${this.escape(p.zip_code)}" required maxlength="10" placeholder="33101">
           </div>
         </div>
         <div class="form-row">
@@ -257,11 +325,11 @@ const app = {
         <div class="form-row">
           <div class="form-group">
             <label>Emergency Contact Name</label>
-            <input type="text" id="edit-em-name" value="${this.escape(p.emergency_contact_name || '')}">
+            <input type="text" id="edit-em-name" class="format-name" value="${this.escape(p.emergency_contact_name || '')}">
           </div>
           <div class="form-group">
-            <label>Emergency Contact Phone</label>
-            <input type="text" id="edit-em-phone" value="${this.escape(p.emergency_contact_phone || '')}">
+            <label>Emergency Contact Phone (10 digits)</label>
+            <input type="text" id="edit-em-phone" class="format-phone" inputmode="numeric" value="${this.escape(p.emergency_contact_phone || '')}" maxlength="12" placeholder="555-987-6543">
           </div>
         </div>
         <div style="font-size:0.75rem;color:var(--text-faint);margin-bottom:1rem;" class="font-mono">
@@ -274,11 +342,15 @@ const app = {
         </div>
       </form>
     `;
+    this.setupGlobalFormatters(document.getElementById('modal-body-content'));
     document.getElementById('patient-modal').style.display = 'flex';
   },
 
   async updatePatient(e, patientId) {
     e.preventDefault();
+    const errorBanner = document.getElementById('modal-error-banner');
+    errorBanner.style.display = 'none';
+
     const payload = {
       first_name: document.getElementById('edit-fn').value,
       last_name: document.getElementById('edit-ln').value,
@@ -307,10 +379,11 @@ const app = {
         this.closeModal();
         await this.loadPatients();
       } else {
-        alert(`Update failed: ${JSON.stringify(data.error || data.detail)}`);
+        this.showFormError(errorBanner, data);
       }
     } catch (err) {
-      alert(`Error updating patient: ${err.message}`);
+      errorBanner.style.display = 'block';
+      errorBanner.innerText = `Network Error: ${err.message}`;
     }
   },
 
@@ -346,21 +419,22 @@ const app = {
   openNewPatientModal() {
     document.getElementById('modal-title').innerText = 'Register New Patient';
     document.getElementById('modal-body-content').innerHTML = `
+      <div id="modal-error-banner" class="error-banner" style="display:none;"></div>
       <form onsubmit="app.createNewPatient(event)">
         <div class="form-row">
           <div class="form-group">
-            <label>First Name *</label>
-            <input type="text" id="new-fn" required>
+            <label>First Name * (Letters only)</label>
+            <input type="text" id="new-fn" class="format-name" placeholder="John" required maxlength="50">
           </div>
           <div class="form-group">
-            <label>Last Name *</label>
-            <input type="text" id="new-ln" required>
+            <label>Last Name * (Letters only)</label>
+            <input type="text" id="new-ln" class="format-name" placeholder="Doe" required maxlength="50">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Date of Birth * (MM/DD/YYYY)</label>
-            <input type="text" id="new-dob" placeholder="05/14/1990" required>
+            <label>Date of Birth * (MM/DD/YYYY - Digits only)</label>
+            <input type="text" id="new-dob" class="format-dob" inputmode="numeric" placeholder="05/14/1990" required maxlength="10">
           </div>
           <div class="form-group">
             <label>Sex *</label>
@@ -374,8 +448,8 @@ const app = {
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Phone Number * (10-digit)</label>
-            <input type="text" id="new-phone" placeholder="555-123-4567" required>
+            <label>Phone Number * (10 Digits Only)</label>
+            <input type="text" id="new-phone" class="format-phone" inputmode="numeric" placeholder="555-123-4567" required maxlength="12">
           </div>
           <div class="form-group">
             <label>Email</label>
@@ -384,33 +458,49 @@ const app = {
         </div>
         <div class="form-group">
           <label>Address Line 1 *</label>
-          <input type="text" id="new-addr1" placeholder="123 Health Ave" required>
+          <input type="text" id="new-addr1" placeholder="123 Health Ave" required maxlength="255">
         </div>
         <div class="form-row">
           <div class="form-group">
             <label>City *</label>
-            <input type="text" id="new-city" placeholder="Miami" required>
+            <input type="text" id="new-city" placeholder="Miami" required maxlength="100">
           </div>
           <div class="form-group" style="flex:0.5;">
-            <label>State * (2-letter)</label>
-            <input type="text" id="new-state" placeholder="FL" maxlength="2" required>
+            <label>State * (2 letters)</label>
+            <input type="text" id="new-state" class="format-state" placeholder="FL" maxlength="2" required>
           </div>
           <div class="form-group" style="flex:0.7;">
-            <label>Zip Code *</label>
-            <input type="text" id="new-zip" placeholder="33101" required>
+            <label>Zip Code * (5 digits only)</label>
+            <input type="text" id="new-zip" class="format-zip" inputmode="numeric" placeholder="33101" required maxlength="10">
           </div>
         </div>
-        <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:1rem;">
+        <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:1.25rem;">
           <button type="button" class="btn btn-secondary" onclick="app.closeModal()">Cancel</button>
           <button type="submit" class="btn btn-primary">Create Patient (POST /patients)</button>
         </div>
       </form>
     `;
+    this.setupGlobalFormatters(document.getElementById('modal-body-content'));
     document.getElementById('patient-modal').style.display = 'flex';
+  },
+
+  showFormError(bannerEl, data) {
+    bannerEl.style.display = 'block';
+    if (data.error && data.error.details && data.error.details.length > 0) {
+      const msgs = data.error.details.map(d => `• <strong>${d.field || 'Field'}</strong>: ${d.message}`).join('<br>');
+      bannerEl.innerHTML = `<strong>Please correct the following:</strong><br>${msgs}`;
+    } else if (data.error && data.error.message) {
+      bannerEl.innerHTML = `<strong>Validation Error:</strong> ${data.error.message}`;
+    } else {
+      bannerEl.innerHTML = `<strong>Error:</strong> ${JSON.stringify(data.detail || data)}`;
+    }
   },
 
   async createNewPatient(e) {
     e.preventDefault();
+    const errorBanner = document.getElementById('modal-error-banner');
+    errorBanner.style.display = 'none';
+
     const payload = {
       first_name: document.getElementById('new-fn').value,
       last_name: document.getElementById('new-ln').value,
@@ -435,10 +525,11 @@ const app = {
         this.closeModal();
         await this.loadPatients();
       } else {
-        alert(`Validation error: ${JSON.stringify(data.error || data.detail)}`);
+        this.showFormError(errorBanner, data);
       }
     } catch (err) {
-      alert(`Error creating patient: ${err.message}`);
+      errorBanner.style.display = 'block';
+      errorBanner.innerText = `Network Error: ${err.message}`;
     }
   },
 

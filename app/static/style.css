@@ -699,3 +699,15 @@ body {
 
 .text-center { text-align: center; }
 .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+
+.error-banner {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  font-size: 0.84rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+  animation: fadeIn 0.2s ease-in-out;
+}
