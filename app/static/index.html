@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareCloud — Voice AI Patient Intake & Registration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h2>CareCloud</h2>
+          <span>Voice AI Intake</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="patients-tab">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Patients</span>
+          <span class="badge" id="patient-count-badge">0</span>
+        </button>
+        <button class="nav-item" data-tab="calls-tab">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span>Call Logs & Transcripts</span>
+        </button>
+        <button class="nav-item" data-tab="appointments-tab">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Appointments</span>
+        </button>
+        <button class="nav-item" data-tab="simulator-tab">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <span>Voice Intake Simulator</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="api-status-card">
+          <div class="status-indicator online"></div>
+          <div>
+            <div class="status-title">System Status</div>
+            <div class="status-subtitle">API & Webhooks Active</div>
+          </div>
+        </div>
+        <a href="/docs" target="_blank" class="docs-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>API Swagger Docs</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header -->
+      <header class="topbar">
+        <div class="page-title">
+          <h1 id="page-heading">Patient Directory</h1>
+          <p id="page-subheading">Persisted demographic records collected via voice telephony agent & REST API</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-secondary" id="refresh-btn" onclick="app.refreshAll()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-1.19"/></svg>
+            Refresh
+          </button>
+          <button class="btn btn-primary" onclick="app.openNewPatientModal()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Register Patient
+          </button>
+        </div>
+      </header>
+
+      <!-- Stats Overview Row -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon purple">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <div class="stat-details">
+            <span class="stat-label">Total Registered</span>
+            <span class="stat-value" id="stat-total-patients">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon blue">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div class="stat-details">
+            <span class="stat-label">Calls Logged</span>
+            <span class="stat-value" id="stat-total-calls">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon green">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+          </div>
+          <div class="stat-details">
+            <span class="stat-label">Appointments Booked</span>
+            <span class="stat-value" id="stat-total-appts">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon cyan">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="stat-details">
+            <span class="stat-label">Database Persistence</span>
+            <span class="stat-value" style="font-size:1.1rem;color:#10b981;">SQLite Survives Reboots</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 1: Patients Directory -->
+      <section id="patients-tab" class="tab-pane active">
+        <!-- Search & Filter Controls -->
+        <div class="filter-bar">
+          <div class="search-input-wrapper">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="filter-last-name" placeholder="Filter by Last Name..." oninput="app.loadPatients()">
+          </div>
+          <div class="search-input-wrapper">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+            <input type="text" id="filter-dob" placeholder="DOB (MM/DD/YYYY)..." oninput="app.loadPatients()">
+          </div>
+          <div class="search-input-wrapper">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <input type="text" id="filter-phone" placeholder="Phone (e.g. 555-123-4567)..." oninput="app.loadPatients()">
+          </div>
+          <label class="toggle-container">
+            <input type="checkbox" id="filter-include-deleted" onchange="app.loadPatients()">
+            <span>Include Soft-Deleted</span>
+          </label>
+        </div>
+
+        <!-- Patients Table -->
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Patient Name</th>
+                <th>DOB</th>
+                <th>Sex</th>
+                <th>Phone Number</th>
+                <th>Address & State</th>
+                <th>Insurance</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="patients-tbody">
+              <tr>
+                <td colspan="8" class="text-center py-8">Loading patients...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- TAB 2: Call Logs & Transcripts -->
+      <section id="calls-tab" class="tab-pane">
+        <div class="section-card">
+          <div class="section-card-header">
+            <h3>Telephony Intake Call Logs & AI Transcripts</h3>
+            <span class="card-subtitle">Automatically captured via Vapi end-of-call webhooks and linked to patient records</span>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Caller Phone</th>
+                  <th>Duration</th>
+                  <th>Matched Patient</th>
+                  <th>Summary</th>
+                  <th>Transcript & Details</th>
+                </tr>
+              </thead>
+              <tbody id="calls-tbody">
+                <tr><td colspan="6" class="text-center py-8">No calls logged yet. Call the phone number or run the simulator!</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: Appointments -->
+      <section id="appointments-tab" class="tab-pane">
+        <div class="section-card">
+          <div class="section-card-header">
+            <h3>Scheduled Patient Appointments (Bonus Challenge)</h3>
+            <span class="card-subtitle">Booked automatically by the Voice AI Coordinator after patient intake</span>
+          </div>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Patient ID</th>
+                  <th>Department</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Status</th>
+                  <th>Intake Notes</th>
+                </tr>
+              </thead>
+              <tbody id="appts-tbody">
+                <tr><td colspan="6" class="text-center py-8">No appointments booked yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: Voice Intake Simulator -->
+      <section id="simulator-tab" class="tab-pane">
+        <div class="simulator-grid">
+          <div class="section-card">
+            <div class="section-card-header">
+              <h3>Interactive Voice AI Intake Simulator</h3>
+              <span class="card-subtitle">Test the exact tool execution, duplicate detection, and REST API database writes without needing a live telephone call.</span>
+            </div>
+            
+            <div class="simulator-flow">
+              <div class="form-group">
+                <label>Step 1: Check Caller Phone for Duplicate Detection</label>
+                <div class="input-with-action">
+                  <input type="text" id="sim-phone" value="555-234-5678" placeholder="555-123-4567">
+                  <button class="btn btn-secondary" onclick="app.simCheckPhone()">Run Duplicate Check</button>
+                </div>
+                <div id="sim-duplicate-result" class="sim-result-box" style="display:none;"></div>
+              </div>
+
+              <div class="divider"></div>
+
+              <label style="font-weight:700;margin-bottom:0.75rem;display:block;">Step 2: Simulate Voice Agent Saving Collected Demographics</label>
+              <form id="sim-register-form" onsubmit="app.simRegisterPatient(event)">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>First Name *</label>
+                    <input type="text" id="sim-fn" value="Alex" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Last Name *</label>
+                    <input type="text" id="sim-ln" value="Morgan" required>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Date of Birth * (MM/DD/YYYY)</label>
+                    <input type="text" id="sim-dob" value="08/21/1992" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Sex *</label>
+                    <select id="sim-sex">
+                      <option value="Male">Male</option>
+                      <option value="Female" selected>Female</option>
+                      <option value="Other">Other</option>
+                      <option value="Decline to Answer">Decline to Answer</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Phone Number *</label>
+                    <input type="text" id="sim-reg-phone" value="555-432-1098" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="sim-email" value="alex.m@example.com">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Address Line 1 *</label>
+                  <input type="text" id="sim-addr1" value="500 Brickell Ave" required>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>City *</label>
+                    <input type="text" id="sim-city" value="Miami" required>
+                  </div>
+                  <div class="form-group" style="flex:0.5;">
+                    <label>State * (2-letter)</label>
+                    <input type="text" id="sim-state" value="FL" maxlength="2" required>
+                  </div>
+                  <div class="form-group" style="flex:0.7;">
+                    <label>Zip Code *</label>
+                    <input type="text" id="sim-zip" value="33131" required>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Insurance Provider</label>
+                    <input type="text" id="sim-ins" value="UnitedHealthcare">
+                  </div>
+                  <div class="form-group">
+                    <label>Member ID</label>
+                    <input type="text" id="sim-ins-id" value="UHC-992211">
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;padding:0.75rem;">
+                  Simulate Confirmation & Trigger POST /patients Webhook
+                </button>
+              </form>
+              <div id="sim-register-result" class="sim-result-box" style="display:none;margin-top:1rem;"></div>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <div class="section-card-header">
+              <h3>Live Telephony Assistant Quick Reference</h3>
+              <span class="card-subtitle">Telephony configurations and test credentials</span>
+            </div>
+            <div class="telephony-details">
+              <div class="detail-row">
+                <span class="detail-label">Telephony Provider</span>
+                <span class="detail-val font-mono">Vapi AI Telephony</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Speech-to-Text</span>
+                <span class="detail-val font-mono">Deepgram Nova-2 Medical/Conversational</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">LLM Orchestrator</span>
+                <span class="detail-val font-mono">OpenAI GPT-4o-mini (Low latency)</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Text-to-Speech</span>
+                <span class="detail-val font-mono">ElevenLabs (Rachel - Warm & Professional)</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Server Webhook URL</span>
+                <span class="detail-val font-mono" id="display-webhook-url">/api/vapi/webhook</span>
+              </div>
+            </div>
+
+            <div class="call-script-preview">
+              <h4>Conversational Flow Script</h4>
+              <p><strong>1. Greet & Check:</strong> "Hello! Thank you for calling CareCloud Health. My name is Sarah. I can help register you today. May I start with your phone number?"</p>
+              <p><strong>2. Duplicate Recognition:</strong> If existing phone, offers: "It looks like we already have a record for [Name]. Would you like to update your information instead?"</p>
+              <p><strong>3. Step-by-step Intake:</strong> Collects name, DOB, sex, street address, city, state, zip.</p>
+              <p><strong>4. Optional Offer:</strong> "I can also collect your insurance, emergency contact, and preferred language. Would you like to provide any of those?"</p>
+              <p><strong>5. Read-back Confirmation:</strong> Reads all collected items back clearly before saving.</p>
+              <p><strong>6. Save & Complete:</strong> Calls API to persist, confirms: "You're all set, [First Name]!", and offers appointment scheduling.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal: Patient Details & Edit -->
+  <div class="modal-overlay" id="patient-modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">Patient Details</h3>
+        <button class="modal-close" onclick="app.closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body-content">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Call Transcript Viewer -->
+  <div class="modal-overlay" id="transcript-modal" style="display:none;">
+    <div class="modal-content" style="max-width:700px;">
+      <div class="modal-header">
+        <h3>Call Transcript & Recording</h3>
+        <button class="modal-close" onclick="app.closeTranscriptModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="transcript-modal-body">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
