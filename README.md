@@ -14,7 +14,7 @@ A production-grade, voice-driven patient registration system built for the CareC
 
 | Item | Details |
 | :--- | :--- |
-| **Repository URL** | https://github.com/inside-forker/carecloud-voice-agent |
+| **Repository URL** | https://github.com/UmerNoor-cmd/carecloud-voice-agent |
 | **US Phone Number** | Provisioned via Vapi Telephony (e.g. `+1 (XXX) XXX-XXXX`) |
 | **API Base URL** | `https://your-app.railway.app` (or local via tunnel) |
 | **Dashboard** | Web UI available at root `/` (e.g., `https://your-app.railway.app/`) |
