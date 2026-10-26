@@ -14,11 +14,12 @@ A production-grade, voice-driven patient registration system built for the CareC
 
 | Item | Details |
 | :--- | :--- |
-| **Repository URL** | https://github.com/UmerNoor-cmd/carecloud-voice-agent |
-| **US Phone Number** | Provisioned via Vapi Telephony (e.g. `+1 (XXX) XXX-XXXX`) |
-| **API Base URL** | `https://your-app.railway.app` (or local via tunnel) |
-| **Dashboard** | Web UI available at root `/` (e.g., `https://your-app.railway.app/`) |
-| **API Documentation** | Swagger UI at `/docs` |
+| **Repository URL** | [https://github.com/UmerNoor-cmd/carecloud-voice-agent](https://github.com/UmerNoor-cmd/carecloud-voice-agent) |
+| **US Phone Number** | **`+1 (331) 241-4044`** (Provisioned via Vapi Telephony) |
+| **API Base URL** | `https://carecloud-voice-agent-ic1k.onrender.com` (or local `http://localhost:8000`) |
+| **Dashboard** | `https://carecloud-voice-agent-ic1k.onrender.com/` (or local `http://localhost:8000/`) |
+| **API Documentation** | Interactive Swagger UI at `/docs` |
+| **Credentials / Notes** | None required. Pre-seeded with 2 demo records (*Jane Doe* & *Carlos Rodriguez*). |
 
 ---
 
@@ -137,82 +138,11 @@ The voice agent is prompted as **"Sarah"**, an intake coordinator at CareCloud H
 
 ---
 
-## Setup & Running Locally
+## How to Test
 
-### 1. Prerequisites
-- Python 3.9+
-- `pip`
+### 1. Dial the Live Telephony Agent
+- **US Phone Number**: **`+1 (331) 241-4044`**
+- Speak naturally to "Sarah" to register a new patient or test duplicate detection by calling from the same number again.
 
-### 2. Installation
-```bash
-git clone <your-repo-url>
-cd carecloud-voice-agent
-
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 3. Run Automated Tests
-```bash
-python -m pytest -v tests/
-```
-
-### 4. Start the Application
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-- Open **Dashboard**: [http://localhost:8000](http://localhost:8000)
-- Open **Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
-
----
-
-## Connecting Vapi Telephony & Provisioning a US Phone Number
-
-1. Sign up / Log in to [Vapi.ai](https://vapi.ai).
-2. Retrieve your **Private API Key** from Account Settings.
-3. Expose your local port via a tunnel (e.g. `ngrok http 8000` or Cloudflare Tunnel) or deploy to Railway/Render.
-4. Run the automated configuration script:
-```bash
-python scripts/setup_vapi.py --api-key <YOUR_VAPI_KEY> --server-url https://your-public-url.railway.app
-```
-This script will:
-- Automatically upload the CareCloud system prompt, voice settings, and tool definitions to Vapi.
-- Link the assistant to your provisioned US phone number.
-- Set the webhook URL to `<SERVER_URL>/api/vapi/webhook`.
-
-You can now call the phone number directly from any mobile phone or landline to test the complete voice intake flow!
-
----
-
-## Cloud Deployment (Railway / Render)
-
-### Deploying on Railway (Recommended)
-1. Fork or push this repository to GitHub.
-2. In Railway, click **New Project** -> **Deploy from GitHub repo**.
-3. Railway automatically detects `railway.json` and `Dockerfile`.
-4. Set environment variables (optional for live telephony):
-   - `BASE_URL`: `https://your-app.railway.app`
-   - `VAPI_API_KEY`: `<your_vapi_key>`
-5. Your API and Dashboard will be live at `https://your-app.railway.app`.
-
-### Deploying on Render
-1. Click **New Web Service** and select this repository.
-2. Select **Python** runtime or **Docker**.
-3. Build Command: `pip install -r requirements.txt`
-4. Start Command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-
----
-
-## Trade-offs & Design Decisions
-
-1. **SQLite vs. PostgreSQL**:
-   - *Decision*: SQLite with WAL mode (`PRAGMA journal_mode=WAL`) was chosen for simplicity, zero-dependency deployment, and fast local and single-instance container durability.
-   - *Trade-off*: For a multi-region, distributed cluster with horizontal auto-scaling, PostgreSQL (e.g., via Supabase or Neon) would replace SQLite. The SQLAlchemy ORM models were written to be 100% dialect-agnostic, enabling a seamless switch by changing `DATABASE_URL`.
-2. **Vapi Platform vs. Raw Telephony**:
-   - *Decision*: As recommended in the assessment prompt, Vapi abstracts low-level WebSockets and telephony SIP trunking, allowing deep investment in clean prompt engineering, strict server-side validation, error handling, and latency optimization.
-3. **Server-Side Validation**:
-   - Never trust the LLM alone for data integrity. The API strictly validates phone formats, state abbreviations, zip codes, and dates of birth, returning actionable guidance back to the agent if validation fails.
+### 2. View Live Dashboard
+- Open: [https://carecloud-voice-agent-ic1k.onrender.com](https://carecloud-voice-agent-ic1k.onrender.com) (or local [http://localhost:8000](http://localhost:8000))
